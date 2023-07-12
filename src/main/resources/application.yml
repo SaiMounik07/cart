@@ -1,0 +1,5 @@
+spring:
+  data:
+    mongodb:
+      uri : mongodb+srv://admin:admin@blackdevil01.uoqoelg.mongodb.net/?retryWrites=true&w=majority
+      database : Product
