@@ -3,7 +3,7 @@ package com.mini.ecommerce.cart.controllers;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-public class Cart {
+public class CartController {
 
 //    @PostMapping("/cart/createCart")
 //    public void addToCart(@RequestBody CreateCart cart){
