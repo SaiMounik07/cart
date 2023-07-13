@@ -2,7 +2,8 @@ package com.mini.ecommerce.cart.dto.response;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.List;
 
 @Data
 public class CreateCategorydto {
@@ -11,4 +12,7 @@ public class CreateCategorydto {
     public String categoryCode;
     public String categoryName;
     public String categoryImageUrl;
+
+
+
 }

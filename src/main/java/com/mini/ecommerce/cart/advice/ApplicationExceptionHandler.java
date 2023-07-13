@@ -1,7 +1,10 @@
 package com.mini.ecommerce.cart.advice;
 
 import com.mini.ecommerce.cart.exceptionhandler.CategoryAlreadyExists;
+import com.mini.ecommerce.cart.exceptionhandler.CommonException;
+import com.mini.ecommerce.cart.exceptionhandler.NoSuchCategoryFound;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -17,9 +20,27 @@ public class ApplicationExceptionHandler {
 
     @ExceptionHandler(CategoryAlreadyExists.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public HashMap<String,String> handleCategoryException(CategoryAlreadyExists cat){
+    public HashMap<String,String> handleCategoryException(CategoryAlreadyExists categoryAlreadyExists){
         HashMap<String,String> category=new HashMap<>();
-        category.put("errorMessage",cat.getMessage());
+        category.put("errorMessage",categoryAlreadyExists.getMessage());
         return category;
+    }
+
+    @ExceptionHandler(NoSuchCategoryFound.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public HashMap<String,Object> noCategoryFound(NoSuchCategoryFound noSuchCategoryFound){
+        HashMap<String,Object> category=new HashMap<>();
+        category.put("success",false);
+        category.put("errorMessage",noSuchCategoryFound.getMessage());
+        return category;
+    }
+    @ExceptionHandler(CommonException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public HashMap<String,Object> commonExceptionHandler(CommonException commonException){
+        HashMap<String,Object> commonExceptions=new HashMap<>();
+        commonExceptions.put("success",false);
+        commonExceptions.put("errorMessage",commonException.getMessage());
+        return commonExceptions;
+
     }
 }
