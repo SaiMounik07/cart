@@ -3,12 +3,17 @@ package com.mini.ecommerce.cart.services.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mini.ecommerce.cart.dto.request.CreateCategoryRq;
+import com.mini.ecommerce.cart.dto.request.CreateProductRq;
 import com.mini.ecommerce.cart.dto.response.CreateCategorydto;
+import com.mini.ecommerce.cart.dto.response.CreateProductDto;
 import com.mini.ecommerce.cart.exceptionhandler.CategoryAlreadyExists;
 import com.mini.ecommerce.cart.exceptionhandler.CommonException;
+import com.mini.ecommerce.cart.exceptionhandler.CommonOkException;
 import com.mini.ecommerce.cart.exceptionhandler.NoSuchCategoryFound;
 import com.mini.ecommerce.cart.models.documents.CreateCategoryDb;
+import com.mini.ecommerce.cart.models.documents.CreateProductDb;
 import com.mini.ecommerce.cart.repositories.CategoryRepo;
+import com.mini.ecommerce.cart.repositories.ProductRepo;
 import com.mini.ecommerce.cart.services.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,21 +22,95 @@ import javax.validation.Valid;
 import java.util.*;
 
 @Service
-public class CategoryImpl implements Product {
+public class ProductImpl implements Product {
    @Autowired
    CategoryRepo categoryRepo;
+
+   @Autowired
+   ProductRepo productRepo;
    @Autowired
    ObjectMapper mapper;
+
+    @Override
+    public CreateProductDto createProduct(CreateProductRq createProductRq) throws CommonException {
+        CreateProductDto createProductDto = null;
+        ProductRequestValidator productRequestValidator=new ProductRequestValidator(productRepo,categoryRepo);
+        ProductUtils productUtils = new ProductUtils(productRepo,categoryRepo,mapper);
+        if (productRequestValidator.createProductRequest(createProductRq)) {
+            CreateProductDb createProductDb = new CreateProductDb();
+            Integer replishedStocks = 0;//need to implement
+            Integer reservedStocks = 0;//need to implement
+            createProductDb.setProductId(createProductRq.getProductId());
+            createProductDb.setProductDescription(createProductRq.getProductDescription());
+            createProductDb.setProductName(createProductRq.getProductName());
+            createProductDb.setProductImage(createProductRq.getProductImage());
+            createProductDb.setInitialStocks(createProductRq.getInitialStocks());
+            createProductDb.setCategories(productUtils.mapCategory(createProductRq.getCategories()));
+            createProductDb.setProductListPrice(createProductRq.getProductListPrice());
+            createProductDb.setProductOfferPrice(createProductRq.getProductOfferPrice());
+            createProductDb.setIsActive(createProductRq.getIsActive());
+            createProductDb.setIsOutOfStock(productUtils.isProductOutOfStock(createProductRq.getInitialStocks(), replishedStocks));
+            createProductDb.setTotalStockReplenished(replishedStocks);
+            createProductDb.setReservedStock(reservedStocks);
+            createProductDb.setId(UUID.randomUUID().toString().split("-")[0]);
+            createProductDb.setSuccess(true);
+            CreateProductDb createProductDb1 = productRepo.save(createProductDb);
+
+           Optional<CreateCategoryDb> createCategoryDb;
+            for (String category: createProductRq.getCategories()){
+                List<CreateProductDto> list=new ArrayList<>();
+                createCategoryDb=categoryRepo.findBycategoryName(category);
+                if (createCategoryDb.isPresent()){
+                    list.add(mapper.convertValue(createProductDb1, new TypeReference<CreateProductDto>() {
+                    }));
+                   CreateCategoryDb categoryDb= createCategoryDb.get();
+                   categoryDb.setProducts(list);
+                    categoryRepo.save(categoryDb);
+                }else {
+                    throw new CommonException("category invalid");
+                }
+            }
+
+            createProductDto = mapper.convertValue(createProductDb1, new TypeReference<CreateProductDto>() {
+            });
+
+        }else {
+            throw new CommonException("an Error occured");
+        }
+        return createProductDto;
+    }
+
+    @Override
+    public List<CreateProductDto> getProducts() {
+       List<CreateProductDb> createProductDb=productRepo.findAll();
+       List<CreateProductDto> createProductDto=mapper.convertValue(createProductDb, new TypeReference<>() {
+        });
+       return createProductDto;
+    }
+
+    @Override
+    public List<CreateProductDto> getSpecficProduct(String productDetail) throws CommonOkException {
+       Optional<List<CreateProductDb>> createProductDb=productRepo.findAllByProductName(productDetail);
+       if (createProductDb.isEmpty()||createProductDb.get().size()==0){
+           throw new CommonOkException("the product details are empty");
+       }
+       return mapper.convertValue(createProductDb.get(), new TypeReference<List<CreateProductDto>>() {
+       });
+    }
+
+
     @Override
     public CreateCategorydto createCategory(@Valid CreateCategoryRq createCategory) throws CategoryAlreadyExists {
         if (createCategory.categoryName==null){
             throw new CategoryAlreadyExists("CategoryName must Not be Null");
         }
+        ProductUtils productUtils=new ProductUtils(productRepo,categoryRepo,mapper);
         CreateCategoryDb createCategoryDb = new CreateCategoryDb();
         createCategoryDb.setCategoryName(createCategory.categoryName);
         createCategoryDb.setCategoryImageUrl(createCategory.categoryImage);
         createCategoryDb.setCategoryCode(generateCategoryCode(createCategory.categoryName));
         createCategoryDb.setId(UUID.randomUUID().toString().split("-")[0]);
+//        createCategoryDb.setProducts(productUtils.mapProducts(createCategory.getCategoryName()));
         Optional<CreateCategoryDb> lis=categoryRepo.findBycategoryName(createCategory.categoryName);
         CreateCategorydto createCategorydto;
         if (lis.isEmpty()) {
@@ -47,9 +126,8 @@ public class CategoryImpl implements Product {
 
     public List<CreateCategorydto> getAllCategories(){
         List<CreateCategoryDb> categoryDb=categoryRepo.findAll();
-        List<CreateCategorydto> createCategorydto = mapper.convertValue(categoryDb, new TypeReference<>() {
+        return mapper.convertValue(categoryDb, new TypeReference<>() {
         });
-        return createCategorydto;
 
     }
 
@@ -57,7 +135,6 @@ public class CategoryImpl implements Product {
     public CreateCategorydto getSpecficCategory(String categoryName) throws NoSuchCategoryFound {
         if (categoryName!=null) {
             Optional<CreateCategoryDb> createCategoryDb=categoryRepo.findBycategoryName(categoryName);
-//            CreateCategoryDb createCategoryDb = categoryRepo.findBycategoryName(categoryName);
             CreateCategorydto createCategorydto = null;
             if (!createCategoryDb.isEmpty()) {
                 createCategorydto = mapper.convertValue(createCategoryDb, new TypeReference<CreateCategorydto>() {
@@ -108,10 +185,17 @@ public class CategoryImpl implements Product {
                 return mapper.convertValue(createCategoryDb, new TypeReference<CreateCategorydto>() {
                 });
             }else {
-                throw new CommonException("category name doesnt exists");
+                throw new CommonException("category name doesn't exists");
             }
         }
     }
+
+
+
+
+
+
+
 
     public static String generateCategoryCode(String productName){
         Random random = new Random();

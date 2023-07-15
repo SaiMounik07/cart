@@ -2,6 +2,7 @@ package com.mini.ecommerce.cart.advice;
 
 import com.mini.ecommerce.cart.exceptionhandler.CategoryAlreadyExists;
 import com.mini.ecommerce.cart.exceptionhandler.CommonException;
+import com.mini.ecommerce.cart.exceptionhandler.CommonOkException;
 import com.mini.ecommerce.cart.exceptionhandler.NoSuchCategoryFound;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpCookie;
@@ -41,6 +42,14 @@ public class ApplicationExceptionHandler {
         commonExceptions.put("success",false);
         commonExceptions.put("errorMessage",commonException.getMessage());
         return commonExceptions;
+    }
 
+    @ExceptionHandler(CommonOkException.class)
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public HashMap<String,Object> commonOkException(CommonOkException commonOkException){
+        HashMap<String,Object> commonExceptions=new HashMap<>();
+        commonExceptions.put("success",false);
+        commonExceptions.put("errorMessage",commonOkException.getMessage());
+        return  commonExceptions;
     }
 }

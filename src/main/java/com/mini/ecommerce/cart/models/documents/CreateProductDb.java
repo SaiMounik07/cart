@@ -1,27 +1,28 @@
-package com.mini.ecommerce.cart.dto.request;
+package com.mini.ecommerce.cart.models.documents;
 
 import com.mini.ecommerce.cart.dto.response.CreateCategorydto;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
+@Document(collection="productDetails")
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class CreateProductRq {
-    @NotNull(message = "productName must Not be null")
+public class CreateProductDb {
+    @Id
+    public String id;
+    private Boolean success;
     private String productId;
     private String productName;
     private String productDescription;
     private String productImage;
     private Double productOfferPrice;
     private Double productListPrice;
-    private List<String> categories;
+    private List<CreateCategorydto> categories;
     private Integer initialStocks;
+    private Integer reservedStock;
+    private Integer totalStockReplenished;
     private Boolean isActive;
+    private Boolean isOutOfStock;
 }
