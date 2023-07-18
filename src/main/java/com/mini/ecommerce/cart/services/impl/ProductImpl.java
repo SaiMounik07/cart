@@ -58,19 +58,32 @@ public class ProductImpl implements Product {
 
            Optional<CreateCategoryDb> createCategoryDb;
             for (String category: createProductRq.getCategories()){
-                List<CreateProductDto> list=new ArrayList<>();
-                createCategoryDb=categoryRepo.findBycategoryName(category);
-                if (createCategoryDb.isPresent()){
-                    list.add(mapper.convertValue(createProductDb1, new TypeReference<CreateProductDto>() {
-                    }));
-                   CreateCategoryDb categoryDb= createCategoryDb.get();
-                   categoryDb.setProducts(list);
-                    categoryRepo.save(categoryDb);
-                }else {
-                    throw new CommonException("category invalid");
-                }
-            }
 
+                createCategoryDb=categoryRepo.findBycategoryName(category);
+                List<CreateProductDto> list = null;
+                    if (createCategoryDb.isPresent()) {
+                        try {
+                            list = createCategoryDb.get().getProducts();
+                            list.add(mapper.convertValue(createProductDb1, new TypeReference<>() {
+                            }));
+                            CreateCategoryDb categoryDb = createCategoryDb.get();
+                            categoryDb.setProducts(list);
+                            categoryRepo.save(categoryDb);
+                        }
+                        catch (Exception e){
+                            list = new ArrayList<>();
+                            list.add(mapper.convertValue(createProductDb1, new TypeReference<>() {
+                            }));
+                            CreateCategoryDb categoryDb = createCategoryDb.get();
+                            categoryDb.setProducts(list);
+                            categoryRepo.save(categoryDb);
+                        }
+
+
+                    } else {
+                        throw new CommonException("category invalid");
+                    }
+            }
             createProductDto = mapper.convertValue(createProductDb1, new TypeReference<CreateProductDto>() {
             });
 
@@ -98,6 +111,69 @@ public class ProductImpl implements Product {
        });
     }
 
+    @Override
+    public Boolean deleteProduct(String productId) throws CommonException {
+        if (productId==null){
+            throw new CommonException("productId is null");
+        }
+        Optional<CreateProductDb> createProductDb=productRepo.findByProductId(productId);
+        if (createProductDb.isEmpty()) {
+            throw new CommonException("product not exist");
+        }
+        productRepo.delete(createProductDb.get());
+        return true;
+    }
+
+    @Override
+    public CreateProductDto updateProduct(CreateProductRq createProductRq) throws CommonException {
+        CreateProductDto createProductDto = null;
+        Optional<CreateProductDb> createProductDb2=productRepo.findByProductId(createProductRq.getProductId());
+        if(createProductDb2.isEmpty()){
+            throw new CommonException("product does not exists");
+        }else {
+            ProductRequestValidator productRequestValidator = new ProductRequestValidator(productRepo, categoryRepo);
+            ProductUtils productUtils = new ProductUtils(productRepo, categoryRepo, mapper);
+            if (productRequestValidator.createProductRequestforUpdate(createProductRq)) {
+                CreateProductDb createProductDb = createProductDb2.get();
+                Integer replishedStocks = 0;//need to implement
+                Integer reservedStocks = 0;//need to implement
+                createProductDb.setProductDescription(createProductRq.getProductDescription());
+                createProductDb.setProductName(createProductRq.getProductName());
+                createProductDb.setProductImage(createProductRq.getProductImage());
+                createProductDb.setInitialStocks(createProductRq.getInitialStocks());
+                createProductDb.setCategories(productUtils.mapCategory(createProductRq.getCategories()));
+                createProductDb.setProductListPrice(createProductRq.getProductListPrice());
+                createProductDb.setProductOfferPrice(createProductRq.getProductOfferPrice());
+                createProductDb.setIsActive(createProductRq.getIsActive());
+                createProductDb.setIsOutOfStock(productUtils.isProductOutOfStock(createProductRq.getInitialStocks(), replishedStocks));
+                createProductDb.setTotalStockReplenished(replishedStocks);
+                createProductDb.setReservedStock(reservedStocks);
+                createProductDb.setSuccess(true);
+                CreateProductDb createProductDb1 = productRepo.save(createProductDb);
+                Optional<CreateCategoryDb> createCategoryDb;
+                for (String category : createProductRq.getCategories()) {
+                    List<CreateProductDto> list = null;
+                    createCategoryDb = categoryRepo.findBycategoryName(category);
+                    if (createCategoryDb.isPresent()) {
+                        list=productUtils.updateProductDetailsInCategory(createCategoryDb.get().getProducts(),createProductDb);
+                        list.add(mapper.convertValue(createProductDb1, new TypeReference<>() {
+                        }));
+                        CreateCategoryDb categoryDb = createCategoryDb.get();
+                        categoryDb.setProducts(list);
+                        categoryRepo.save(categoryDb);
+                    } else {
+                        throw new CommonException("category invalid");
+                    }
+                }
+                createProductDto = mapper.convertValue(createProductDb1, new TypeReference<CreateProductDto>() {
+                });
+            } else {
+                throw new CommonException("some error occured");
+            }
+        }
+        return createProductDto;
+    }
+
 
     @Override
     public CreateCategorydto createCategory(@Valid CreateCategoryRq createCategory) throws CategoryAlreadyExists {
@@ -112,6 +188,7 @@ public class ProductImpl implements Product {
         createCategoryDb.setId(UUID.randomUUID().toString().split("-")[0]);
 //        createCategoryDb.setProducts(productUtils.mapProducts(createCategory.getCategoryName()));
         Optional<CreateCategoryDb> lis=categoryRepo.findBycategoryName(createCategory.categoryName);
+
         CreateCategorydto createCategorydto;
         if (lis.isEmpty()) {
             CreateCategoryDb categoryDb = categoryRepo.save(createCategoryDb);

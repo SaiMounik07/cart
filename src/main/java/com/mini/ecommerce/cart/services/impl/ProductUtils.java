@@ -13,33 +13,36 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
-public class ProductUtils extends ProductImpl{
-    List<CreateCategorydto> categoryList=new ArrayList<>();
+public class ProductUtils extends ProductImpl {
+    List<CreateCategorydto> categoryList = new ArrayList<>();
     @Autowired
     ObjectMapper mapper;
     @Autowired
     CategoryRepo categoryRepo;
-    public ProductUtils(ProductRepo productRepo,CategoryRepo categoryRepo,ObjectMapper mapper){
-        this.categoryRepo=categoryRepo;
-        this.productRepo=productRepo;
-        this.mapper=mapper;
+
+    public ProductUtils(ProductRepo productRepo, CategoryRepo categoryRepo, ObjectMapper mapper) {
+        this.categoryRepo = categoryRepo;
+        this.productRepo = productRepo;
+        this.mapper = mapper;
     }
+
     public List<CreateCategorydto> mapCategory(List<String> categories) throws CommonException {
-        for (String categoryName:categories){
-            Optional <CreateCategoryDb> optionalCreateCategoryDb = categoryRepo.findBycategoryName(categoryName);
-            if (optionalCreateCategoryDb.isPresent()){
+        for (String categoryName : categories) {
+            Optional<CreateCategoryDb> optionalCreateCategoryDb = categoryRepo.findBycategoryName(categoryName);
+            if (optionalCreateCategoryDb.isPresent()) {
                 new CreateCategoryDb();
                 CreateCategoryDb createCategoryDb;
-                createCategoryDb=optionalCreateCategoryDb.get();
-                CreateCategorydto createCategorydto=mapper.convertValue(createCategoryDb, new TypeReference<CreateCategorydto>() {
+                createCategoryDb = optionalCreateCategoryDb.get();
+                CreateCategorydto createCategorydto = mapper.convertValue(createCategoryDb, new TypeReference<CreateCategorydto>() {
                 });
-                if (createCategorydto.getProducts()==null){
+                if (createCategorydto.getProducts() == null) {
                     createCategorydto.setProducts(null);
                 }
                 categoryList.add(createCategorydto);
-            }else {
+            } else {
                 throw new CommonException("Category not exists");
             }
         }
@@ -47,14 +50,18 @@ public class ProductUtils extends ProductImpl{
     }
 
     public Boolean isProductOutOfStock(Integer initialStocks, Integer replishedStocks) {
-        if (initialStocks==null){
+        if (initialStocks == null) {
             return true;
-        }else {
-            if (initialStocks-replishedStocks<=0){
+        } else {
+            if (initialStocks - replishedStocks <= 0) {
                 return true;
             }
         }
         return false;
     }
 
+    public List<CreateProductDto> updateProductDetailsInCategory(List<CreateProductDto> products, CreateProductDb createProductDb) {
+        products.removeIf(id -> Objects.equals(id.getProductId(), createProductDb.getProductId()));
+        return products;
+    }
 }

@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface CategoryRepo extends MongoRepository<CreateCategoryDb, String> {
     Optional<CreateCategoryDb> findBycategoryName(String categoryName);
+
 }

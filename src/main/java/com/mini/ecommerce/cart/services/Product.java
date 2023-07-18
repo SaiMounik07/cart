@@ -23,4 +23,6 @@ public CreateCategorydto updateCategory(CreateCategoryRq updateCategory) throws 
 public CreateProductDto createProduct(CreateProductRq createProductRq) throws CommonException;
 public List<CreateProductDto> getProducts();
 public List<CreateProductDto> getSpecficProduct(String productDetail) throws CommonOkException;
+public Boolean deleteProduct(String productId) throws CommonException;
+public CreateProductDto updateProduct(CreateProductRq updateProduct) throws CommonException;
 }

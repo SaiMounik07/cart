@@ -35,7 +35,7 @@ public class ProductController {
     public CreateCategorydto getSpecficCategory( @PathVariable String categoryName) throws NoSuchCategoryFound {
         return product.getSpecficCategory(categoryName);
     }
-    @DeleteMapping("/{categoryName}")
+    @DeleteMapping("/category/{categoryName}")
     public HashMap<String,Object> deleteCategory(@PathVariable String categoryName) throws CommonException, NoSuchCategoryFound {
         boolean success= product.deleteCategory(categoryName);
         HashMap<String,Object> hashMap=new HashMap<>();
@@ -58,17 +58,15 @@ public class ProductController {
     public List<CreateProductDto> getProduct(@PathVariable String productDetail) throws CommonOkException {
         return product.getSpecficProduct(productDetail);
     }
-//    @PutMapping("/updateProduct")
-//    public void updateProduct(@RequestBody UpdateProduct updateProduct){
-//
-//    }
-//
-
-
-    @DeleteMapping("/products")
-    public void deleteProduct(String productId){
-
+    @PutMapping("/products")
+    public CreateProductDto updateProduct(@RequestBody CreateProductRq updateProduct) throws CommonException {
+        return product.updateProduct(updateProduct);
     }
-
-
+    @DeleteMapping("/{productId}")
+    public HashMap<String,Object> deleteProduct(@PathVariable  String productId) throws CommonException {
+        boolean success=product.deleteProduct(productId);
+        HashMap<String,Object> hashMap=new HashMap<>();
+        hashMap.put("success",success);
+        return hashMap;
+    }
 }

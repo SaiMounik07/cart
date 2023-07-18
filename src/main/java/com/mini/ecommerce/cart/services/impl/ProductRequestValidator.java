@@ -32,4 +32,11 @@ class ProductRequestValidator {
         }
             return true;
     }
+
+    public boolean createProductRequestforUpdate(CreateProductRq createProductRq) throws CommonException {
+        if (createProductRq.getProductId()==null||createProductRq.getProductId().isEmpty()||createProductRq.getProductName()==null||createProductRq.getCategories()==null||createProductRq.getCategories().size()==0||createProductRq.getProductListPrice()==null){
+            throw new CommonException("Some fields are null please check");
+        }
+        return true;
+    }
 }
