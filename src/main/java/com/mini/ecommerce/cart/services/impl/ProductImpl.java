@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
+import java.lang.reflect.Type;
 import java.util.*;
 
 @Service
@@ -131,6 +132,7 @@ public class ProductImpl implements Product {
         if(createProductDb2.isEmpty()){
             throw new CommonException("product does not exists");
         }else {
+            List<CreateCategorydto> oldCategories=createProductDb2.get().getCategories();
             ProductRequestValidator productRequestValidator = new ProductRequestValidator(productRepo, categoryRepo);
             ProductUtils productUtils = new ProductUtils(productRepo, categoryRepo, mapper);
             if (productRequestValidator.createProductRequestforUpdate(createProductRq)) {
@@ -151,20 +153,27 @@ public class ProductImpl implements Product {
                 createProductDb.setSuccess(true);
                 CreateProductDb createProductDb1 = productRepo.save(createProductDb);
                 Optional<CreateCategoryDb> createCategoryDb;
+                List<CreateProductDto> list = new ArrayList<>();
                 for (String category : createProductRq.getCategories()) {
-                    List<CreateProductDto> list = null;
                     createCategoryDb = categoryRepo.findBycategoryName(category);
                     if (createCategoryDb.isPresent()) {
+                        for (CreateCategorydto categoryDb : oldCategories) {
+                            if (!(createProductRq.getCategories().contains(categoryDb.getCategoryName()))) {
+                                productUtils.deleteProductFromCategory(categoryDb, createProductDb1);
+                            }
+                        }
                         list=productUtils.updateProductDetailsInCategory(createCategoryDb.get().getProducts(),createProductDb);
                         list.add(mapper.convertValue(createProductDb1, new TypeReference<>() {
                         }));
                         CreateCategoryDb categoryDb = createCategoryDb.get();
                         categoryDb.setProducts(list);
                         categoryRepo.save(categoryDb);
-                    } else {
+                    }
+                            else {
                         throw new CommonException("category invalid");
                     }
                 }
+
                 createProductDto = mapper.convertValue(createProductDb1, new TypeReference<CreateProductDto>() {
                 });
             } else {
@@ -234,15 +243,16 @@ public class ProductImpl implements Product {
         Optional<CreateCategoryDb> optionalCreateCategoryDb = categoryRepo.findBycategoryName(categoryName);
         if(optionalCreateCategoryDb.isEmpty())
             throw new CommonException("Category Name is invalid");
-        else
+        else {
+            ProductUtils productUtils = new ProductUtils(productRepo,categoryRepo,mapper);
+            productUtils.categoriesFromAllProduct(optionalCreateCategoryDb.get());
             categoryRepo.delete(optionalCreateCategoryDb.get());
+        }
         Optional<CreateCategoryDb> optionalCreateCategoryDb1 = categoryRepo.findBycategoryName(categoryName);
         if (optionalCreateCategoryDb1.isPresent())
             throw new CommonException("Category "+categoryName+" is not deleted");
         else
             return true;
-
-
 
     }
 

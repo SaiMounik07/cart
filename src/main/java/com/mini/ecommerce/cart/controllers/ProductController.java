@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @RestController
+@CrossOrigin("http://localhost:3000/")
 @RequestMapping(value = "/product")
 public class ProductController {
     @Autowired
