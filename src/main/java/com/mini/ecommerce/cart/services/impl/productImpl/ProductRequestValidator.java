@@ -1,17 +1,14 @@
-package com.mini.ecommerce.cart.services.impl;
+package com.mini.ecommerce.cart.services.impl.productImpl;
 
 import com.mini.ecommerce.cart.dto.request.CreateProductRq;
 import com.mini.ecommerce.cart.exceptionhandler.CommonException;
 import com.mini.ecommerce.cart.models.documents.CreateProductDb;
-import com.mini.ecommerce.cart.repositories.CategoryRepo;
-import com.mini.ecommerce.cart.repositories.ProductRepo;
-import com.mini.ecommerce.cart.services.Product;
+import com.mini.ecommerce.cart.repositories.product.CategoryRepo;
+import com.mini.ecommerce.cart.repositories.product.ProductRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-class ProductRequestValidator {
+class ProductRequestValidator extends ProductImpl {
     @Autowired
     private ProductRepo productRepo;
     @Autowired

@@ -1,21 +1,20 @@
-package com.mini.ecommerce.cart.services.impl;
+package com.mini.ecommerce.cart.services.impl.productImpl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mini.ecommerce.cart.dto.response.CreateCategorydto;
-import com.mini.ecommerce.cart.dto.response.CreateProductDto;
-import com.mini.ecommerce.cart.dto.response.ProductForCategory;
+import com.mini.ecommerce.cart.dto.response.product.CreateCategorydto;
+import com.mini.ecommerce.cart.dto.response.product.CreateProductDto;
+import com.mini.ecommerce.cart.dto.response.product.ProductForCategory;
 import com.mini.ecommerce.cart.exceptionhandler.CommonException;
 import com.mini.ecommerce.cart.models.documents.CreateCategoryDb;
 import com.mini.ecommerce.cart.models.documents.CreateProductDb;
-import com.mini.ecommerce.cart.repositories.CategoryRepo;
-import com.mini.ecommerce.cart.repositories.ProductRepo;
-import org.jetbrains.annotations.NotNull;
+import com.mini.ecommerce.cart.repositories.product.CategoryRepo;
+import com.mini.ecommerce.cart.repositories.product.ProductRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.lang.reflect.Type;
+import java.io.ByteArrayOutputStream;
 import java.util.*;
-import java.util.stream.IntStream;
+import java.util.zip.Deflater;
 
 public class ProductUtils extends ProductImpl {
     List<CreateCategorydto> categoryList = new ArrayList<>();
@@ -84,11 +83,13 @@ public class ProductUtils extends ProductImpl {
               } else {
                   createProductDb1 = createProductDb.get();
                   listOfCategories = createProductDb1.getCategories();
-                  IntStream.range(0, listOfCategories.size()).forEach(i -> {
+
+                  for (int i = 0; i < listOfCategories.size(); i++) {
                       if (listOfCategories.get(i).getCategoryCode().equals(createCategoryDb.getCategoryCode())) {
-                          listOfCategories.remove(listOfCategories.get(i));
+                          listOfCategories.remove(i);
+                          break;
                       }
-                  });
+                  }
               }
               createProductDb1.setCategories(listOfCategories);
               productRepo.save(createProductDb1);
@@ -108,4 +109,26 @@ public class ProductUtils extends ProductImpl {
         });
         categoryRepo.save(createCategoryDb1);
     }
+    public byte[] imageToByte(byte[] data){
+        Deflater deflater = new Deflater();
+        deflater.setLevel(Deflater.BEST_COMPRESSION);
+        deflater.setInput(data);
+        deflater.finish();
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
+        byte[] tmp = new byte[4*1024];
+        while (!deflater.finished()) {
+            int size = deflater.deflate(tmp);
+            outputStream.write(tmp, 0, size);
+        }
+        try {
+            outputStream.close();
+        } catch (Exception ignored) {
+        }
+
+        return outputStream.toByteArray();
+
+    }
+
+
 }

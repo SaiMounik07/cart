@@ -1,11 +1,10 @@
 package com.mini.ecommerce.cart.models.documents;
 
-import com.mini.ecommerce.cart.dto.response.CreateProductDto;
+import com.mini.ecommerce.cart.dto.response.product.CreateProductDto;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Collection;
 import java.util.List;
 
 @Document(collection="category")

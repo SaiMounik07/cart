@@ -9,11 +9,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
-
-
 @RestControllerAdvice
 public class ApplicationExceptionHandler {
-
     @ExceptionHandler(CategoryAlreadyExists.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public HashMap<String,String> handleCategoryException(CategoryAlreadyExists categoryAlreadyExists){
@@ -21,7 +18,6 @@ public class ApplicationExceptionHandler {
         category.put("errorMessage",categoryAlreadyExists.getMessage());
         return category;
     }
-
     @ExceptionHandler(NoSuchCategoryFound.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public HashMap<String,Object> noCategoryFound(NoSuchCategoryFound noSuchCategoryFound){
@@ -46,5 +42,13 @@ public class ApplicationExceptionHandler {
         commonExceptions.put("success",false);
         commonExceptions.put("errorMessage",commonOkException.getMessage());
         return  commonExceptions;
+    }
+    @ExceptionHandler(IndexOutOfBoundsException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public HashMap<String,Object> IndexOutOfBoundsException(IndexOutOfBoundsException indexOutOfBoundsExceptions){
+        HashMap<String,Object> indexOutOfBoundsException=new HashMap<>();
+        indexOutOfBoundsException.put("success",false);
+        indexOutOfBoundsException.put("errorMessage",indexOutOfBoundsExceptions.getMessage());
+        return indexOutOfBoundsException;
     }
 }

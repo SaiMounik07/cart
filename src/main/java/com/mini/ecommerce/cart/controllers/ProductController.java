@@ -2,8 +2,8 @@ package com.mini.ecommerce.cart.controllers;
 
 import com.mini.ecommerce.cart.dto.request.CreateCategoryRq;
 import com.mini.ecommerce.cart.dto.request.CreateProductRq;
-import com.mini.ecommerce.cart.dto.response.CreateCategorydto;
-import com.mini.ecommerce.cart.dto.response.CreateProductDto;
+import com.mini.ecommerce.cart.dto.response.product.CreateCategorydto;
+import com.mini.ecommerce.cart.dto.response.product.CreateProductDto;
 import com.mini.ecommerce.cart.exceptionhandler.CategoryAlreadyExists;
 import com.mini.ecommerce.cart.exceptionhandler.CommonException;
 import com.mini.ecommerce.cart.exceptionhandler.CommonOkException;
@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -44,7 +45,7 @@ public class ProductController {
         return hashMap;
     }
     @PutMapping("/updateCategory")
-    public CreateCategorydto updateCategory(@RequestBody CreateCategoryRq updateCategory) throws CommonException {
+    public CreateCategorydto updateCategory(@RequestBody CreateCategoryRq updateCategory) throws CommonException, IOException {
         return product.updateCategory(updateCategory);
     }
     @PostMapping("/products")
@@ -60,7 +61,7 @@ public class ProductController {
         return product.getSpecficProduct(productDetail);
     }
     @PutMapping("/products")
-    public CreateProductDto updateProduct(@RequestBody CreateProductRq updateProduct) throws CommonException {
+    public CreateProductDto updateProduct(@RequestBody CreateProductRq updateProduct) throws CommonException, ClassNotFoundException {
         return product.updateProduct(updateProduct);
     }
     @DeleteMapping("/{productId}")

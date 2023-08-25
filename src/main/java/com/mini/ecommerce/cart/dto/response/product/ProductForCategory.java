@@ -1,4 +1,4 @@
-package com.mini.ecommerce.cart.dto.response;
+package com.mini.ecommerce.cart.dto.response.product;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;

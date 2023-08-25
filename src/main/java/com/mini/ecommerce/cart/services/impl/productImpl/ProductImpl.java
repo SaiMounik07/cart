@@ -1,25 +1,26 @@
-package com.mini.ecommerce.cart.services.impl;
+package com.mini.ecommerce.cart.services.impl.productImpl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mini.ecommerce.cart.dto.request.CreateCategoryRq;
 import com.mini.ecommerce.cart.dto.request.CreateProductRq;
-import com.mini.ecommerce.cart.dto.response.CreateCategorydto;
-import com.mini.ecommerce.cart.dto.response.CreateProductDto;
+import com.mini.ecommerce.cart.dto.response.product.CreateCategorydto;
+import com.mini.ecommerce.cart.dto.response.product.CreateProductDto;
 import com.mini.ecommerce.cart.exceptionhandler.CategoryAlreadyExists;
 import com.mini.ecommerce.cart.exceptionhandler.CommonException;
 import com.mini.ecommerce.cart.exceptionhandler.CommonOkException;
 import com.mini.ecommerce.cart.exceptionhandler.NoSuchCategoryFound;
 import com.mini.ecommerce.cart.models.documents.CreateCategoryDb;
 import com.mini.ecommerce.cart.models.documents.CreateProductDb;
-import com.mini.ecommerce.cart.repositories.CategoryRepo;
-import com.mini.ecommerce.cart.repositories.ProductRepo;
+import com.mini.ecommerce.cart.repositories.product.CategoryRepo;
+import com.mini.ecommerce.cart.repositories.product.ProductRepo;
 import com.mini.ecommerce.cart.services.Product;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
-import java.lang.reflect.Type;
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -67,6 +68,7 @@ public class ProductImpl implements Product {
                             list = createCategoryDb.get().getProducts();
                             list.add(mapper.convertValue(createProductDb1, new TypeReference<>() {
                             }));
+
                             CreateCategoryDb categoryDb = createCategoryDb.get();
                             categoryDb.setProducts(list);
                             categoryRepo.save(categoryDb);
@@ -126,7 +128,7 @@ public class ProductImpl implements Product {
     }
 
     @Override
-    public CreateProductDto updateProduct(CreateProductRq createProductRq) throws CommonException {
+    public CreateProductDto updateProduct(CreateProductRq createProductRq) throws CommonException, ClassNotFoundException {
         CreateProductDto createProductDto = null;
         Optional<CreateProductDb> createProductDb2=productRepo.findByProductId(createProductRq.getProductId());
         if(createProductDb2.isEmpty()){
@@ -201,9 +203,9 @@ public class ProductImpl implements Product {
         CreateCategorydto createCategorydto;
         if (lis.isEmpty()) {
             CreateCategoryDb categoryDb = categoryRepo.save(createCategoryDb);
-            createCategorydto = mapper.convertValue(categoryDb, new TypeReference<CreateCategorydto>() {
+            createCategorydto = mapper.convertValue(categoryDb, new TypeReference<>() {
             });
-            System.out.println(createCategorydto.toString());
+
         } else {
             throw new CategoryAlreadyExists("category name is exists with categoryName " + createCategoryDb.getCategoryName());
         }
@@ -257,17 +259,20 @@ public class ProductImpl implements Product {
     }
 
     @Override
-    public CreateCategorydto updateCategory(CreateCategoryRq updateCategory) throws CommonException {
-        
-        if (updateCategory.categoryName==null||updateCategory.categoryImage==null)
+    public CreateCategorydto updateCategory(@NotNull CreateCategoryRq updateCategory) throws CommonException, IOException {
+        ProductUtils productUtils = new ProductUtils(productRepo,categoryRepo,mapper);
+        if (updateCategory.categoryName==null||updateCategory.updatedCategoryName==null||updateCategory.updatedCategoryName.length()<3)
             throw new CommonException("CategoryName or Image is null");
         else {
             Optional <CreateCategoryDb> optionalCreateCategoryDb = categoryRepo.findBycategoryName(updateCategory.categoryName);
             if(optionalCreateCategoryDb.isPresent()) {
                 CreateCategoryDb createCategoryDb = optionalCreateCategoryDb.get();
+                if(updateCategory.categoryImage==null)
+                    createCategoryDb.setCategoryImageUrl(createCategoryDb.getCategoryImageUrl());
+                else
+                    createCategoryDb.setCategoryImageUrl(updateCategory.categoryImage);
                 createCategoryDb.setId(createCategoryDb.getId());
                 createCategoryDb.setCategoryName(updateCategory.updatedCategoryName);
-                createCategoryDb.setCategoryImageUrl(updateCategory.categoryImage);
                 categoryRepo.save(createCategoryDb);
                 return mapper.convertValue(createCategoryDb, new TypeReference<CreateCategorydto>() {
                 });
