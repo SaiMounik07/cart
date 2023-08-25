@@ -1,4 +1,4 @@
-package com.mini.ecommerce.cart.repositories;
+package com.mini.ecommerce.cart.repositories.product;
 
 import com.mini.ecommerce.cart.models.documents.CreateCategoryDb;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface CategoryRepo extends MongoRepository<CreateCategoryDb, String> {
     Optional<CreateCategoryDb> findBycategoryName(String categoryName);
+
 }
