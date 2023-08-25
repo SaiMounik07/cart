@@ -29,8 +29,8 @@ public class MailImpl implements Mail {
     public Boolean sendMail(MailBody mailBody) {
         try {
             log.info("started to send mail");
-            final String username = "asaimounik@gmail.com";
-            final String password = "rrliuzhtafdnbqqr";
+            final String username = "asai@gmail.com";
+            final String password = "";
 
             Properties props = new Properties();
             props.put("mail.smtp.auth", "true");
