@@ -30,6 +30,7 @@ public class ApplicationExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public HashMap<String,Object> commonExceptionHandler(CommonException commonException){
         HashMap<String,Object> commonExceptions=new HashMap<>();
+        commonExceptions.put("code",HttpStatus.BAD_REQUEST.value());
         commonExceptions.put("success",false);
         commonExceptions.put("errorMessage",commonException.getMessage());
         return commonExceptions;
@@ -39,6 +40,7 @@ public class ApplicationExceptionHandler {
     @ResponseStatus(HttpStatus.ACCEPTED)
     public HashMap<String,Object> commonOkException(CommonOkException commonOkException){
         HashMap<String,Object> commonExceptions=new HashMap<>();
+        commonExceptions.put("code",HttpStatus.ACCEPTED);
         commonExceptions.put("success",false);
         commonExceptions.put("errorMessage",commonOkException.getMessage());
         return  commonExceptions;

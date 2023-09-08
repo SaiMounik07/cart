@@ -4,13 +4,13 @@ import com.mini.ecommerce.cart.dto.response.mail.MailBody;
 import com.mini.ecommerce.cart.models.entities.MailDB;
 import com.mini.ecommerce.cart.repositories.mail.MailRepo;
 import com.mini.ecommerce.cart.services.Mail;
-import com.mini.ecommerce.cart.services.impl.memberImpl.MemberUtils;
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -21,6 +21,11 @@ import java.util.concurrent.TimeUnit;
 public class MailImpl implements Mail {
 
     private static final Logger log = LoggerFactory.getLogger(MailImpl.class);
+    @Value("${spring.mail}")
+    String username;
+    @Value("${spring.appPassword}")
+    String password;
+
     @Autowired
     MailRepo mailRepo;
     MailDB mailDB;
@@ -29,9 +34,6 @@ public class MailImpl implements Mail {
     public Boolean sendMail(MailBody mailBody) {
         try {
             log.info("started to send mail");
-            final String username = "asai@gmail.com";
-            final String password = "";
-
             Properties props = new Properties();
             props.put("mail.smtp.auth", "true");
             props.put("mail.smtp.starttls.enable", "true");

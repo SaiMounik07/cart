@@ -12,9 +12,7 @@ import com.mini.ecommerce.cart.repositories.product.CategoryRepo;
 import com.mini.ecommerce.cart.repositories.product.ProductRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.ByteArrayOutputStream;
 import java.util.*;
-import java.util.zip.Deflater;
 
 public class ProductUtils extends ProductImpl {
     List<CreateCategorydto> categoryList = new ArrayList<>();
@@ -29,9 +27,9 @@ public class ProductUtils extends ProductImpl {
         this.mapper = mapper;
     }
 
-    public List<CreateCategorydto> mapCategory(List<String> categories) throws CommonException {
+    public List<CreateCategorydto> mapCategory(List<String> categories,String userName) throws CommonException {
         for (String categoryName : categories) {
-            Optional<CreateCategoryDb> optionalCreateCategoryDb = categoryRepo.findBycategoryName(categoryName);
+            Optional<CreateCategoryDb> optionalCreateCategoryDb = categoryRepo.findByCategoryNameAndCreatedBy(categoryName,userName);
             if (optionalCreateCategoryDb.isPresent()) {
                 new CreateCategoryDb();
                 CreateCategoryDb createCategoryDb;
@@ -68,14 +66,14 @@ public class ProductUtils extends ProductImpl {
         }
         return products;
     }
-    public void categoriesFromAllProduct(CreateCategoryDb createCategoryDb) throws CommonException {
+    public void categoriesFromAllProduct(CreateCategoryDb createCategoryDb,String userName) throws CommonException {
           List<CreateProductDto> list=createCategoryDb.getProducts();
           if (list==null){
               return;
           }
           for (CreateProductDto product:list) {
               String productId = product.getProductId();
-              Optional<CreateProductDb> createProductDb = productRepo.findByProductId(productId);
+              Optional<CreateProductDb> createProductDb = productRepo.findByProductIdAndCreatedBy(productId,userName);
               List<CreateCategorydto> listOfCategories;
               CreateProductDb createProductDb1;
               if (createProductDb.isEmpty()) {
@@ -109,26 +107,4 @@ public class ProductUtils extends ProductImpl {
         });
         categoryRepo.save(createCategoryDb1);
     }
-    public byte[] imageToByte(byte[] data){
-        Deflater deflater = new Deflater();
-        deflater.setLevel(Deflater.BEST_COMPRESSION);
-        deflater.setInput(data);
-        deflater.finish();
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
-        byte[] tmp = new byte[4*1024];
-        while (!deflater.finished()) {
-            int size = deflater.deflate(tmp);
-            outputStream.write(tmp, 0, size);
-        }
-        try {
-            outputStream.close();
-        } catch (Exception ignored) {
-        }
-
-        return outputStream.toByteArray();
-
-    }
-
-
 }

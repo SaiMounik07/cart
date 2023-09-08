@@ -1,10 +1,12 @@
 package com.mini.ecommerce.cart.models.documents;
 
 import com.mini.ecommerce.cart.dto.response.product.CreateCategorydto;
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
 import java.util.List;
 
 @Document(collection="productDetails")
@@ -25,4 +27,6 @@ public class CreateProductDb {
     private Integer totalStockReplenished;
     private Boolean isActive;
     private Boolean isOutOfStock;
+    private String createdBy;
+    private Date createdAt;
 }

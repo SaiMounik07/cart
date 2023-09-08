@@ -8,20 +8,20 @@ import com.mini.ecommerce.cart.exceptionhandler.CategoryAlreadyExists;
 import com.mini.ecommerce.cart.exceptionhandler.CommonException;
 import com.mini.ecommerce.cart.exceptionhandler.CommonOkException;
 import com.mini.ecommerce.cart.exceptionhandler.NoSuchCategoryFound;
-
+import com.mini.ecommerce.cart.models.BaseResponse;
 import java.io.IOException;
 import java.util.List;
 
 public interface Product {
 
-public CreateCategorydto createCategory(CreateCategoryRq createCategory) throws CategoryAlreadyExists;
-public List<CreateCategorydto> getAllCategories();
-public CreateCategorydto getSpecficCategory(String categoryName) throws NoSuchCategoryFound;
-public Boolean deleteCategory(String categoryName) throws CommonException, NoSuchCategoryFound;
-public CreateCategorydto updateCategory(CreateCategoryRq updateCategory) throws CommonException, IOException;
-public CreateProductDto createProduct(CreateProductRq createProductRq) throws CommonException;
-public List<CreateProductDto> getProducts();
-public List<CreateProductDto> getSpecficProduct(String productDetail) throws CommonOkException;
-public Boolean deleteProduct(String productId) throws CommonException;
-public CreateProductDto updateProduct(CreateProductRq updateProduct) throws CommonException, ClassNotFoundException;
+ CreateCategorydto createCategory(CreateCategoryRq createCategory,String token) throws CategoryAlreadyExists;
+ BaseResponse<?> getAllCategories(String token);
+ CreateCategorydto getSpecficCategory(String categoryName,String token) throws NoSuchCategoryFound;
+ Boolean deleteCategory(String categoryName,String token) throws CommonException, NoSuchCategoryFound;
+ CreateCategorydto updateCategory(CreateCategoryRq updateCategory,String token) throws CommonException, IOException;
+ CreateProductDto createProduct(CreateProductRq createProductRq,String token) throws CommonException;
+ BaseResponse<List<CreateProductDto>> getProducts(String token);
+ List<CreateProductDto> getSpecficProduct(String productDetail,String token) throws CommonOkException;
+ Boolean deleteProduct(String productId,String token) throws CommonException;
+ CreateProductDto updateProduct(CreateProductRq updateProduct,String token) throws CommonException, ClassNotFoundException;
 }

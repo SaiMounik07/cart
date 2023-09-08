@@ -1,4 +1,4 @@
-package com.mini.ecommerce.cart.services.impl.memberImpl;
+package com.mini.ecommerce.cart.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
 

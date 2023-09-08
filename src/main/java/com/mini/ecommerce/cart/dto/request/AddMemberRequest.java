@@ -1,14 +1,13 @@
 package com.mini.ecommerce.cart.dto.request;
 
-import com.mini.ecommerce.cart.services.impl.memberImpl.Gender;
+import com.mini.ecommerce.cart.dto.response.member.Role;
+import com.mini.ecommerce.cart.models.entities.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.Email;
-import java.util.Date;
 
 @Data
 @Builder
@@ -23,6 +22,7 @@ public class AddMemberRequest {
     private String password;
     private String confirmPassword;
     private String mobileNumber;
+    private Role role;
     private String dob;
 
 }

@@ -3,6 +3,7 @@ package com.mini.ecommerce.cart.services.impl.memberImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mini.ecommerce.cart.dto.request.AddMemberRequest;
+import com.mini.ecommerce.cart.dto.request.OtpRequest;
 import com.mini.ecommerce.cart.dto.response.mail.MailBody;
 import com.mini.ecommerce.cart.dto.response.member.AddMemberDto;
 import com.mini.ecommerce.cart.exceptionhandler.CommonException;
@@ -16,7 +17,10 @@ import com.mini.ecommerce.cart.services.Member;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Calendar;
 import java.util.Optional;
@@ -28,6 +32,8 @@ public class MemberImpl implements Member {
 
     @Autowired
     MemberRepo memberRepo;
+    private PasswordEncoder passwordEncoder;
+    BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
     ObjectMapper mapper;
     @Autowired
@@ -38,6 +44,7 @@ public class MemberImpl implements Member {
     MailBody mailBody;
     MemberRequestValidator memberRequestValidator;
     MemberDB memberDB;
+    RestTemplate restTemplate;
     @Override
     public BaseResponse<AddMemberDto> addMember(AddMemberRequest addMemberRequest) throws CommonException {
         MemberDB memberDB=new MemberDB();
@@ -48,6 +55,8 @@ public class MemberImpl implements Member {
         memberDB.setIsVerified(false);
         memberDB.setCreatedDate(Calendar.getInstance().getTime());
         if (memberRequestValidator.addMemberRequest(addMemberRequest)&&memberUtils.validateEmailId(addMemberRequest.getEmail())&&memberUtils.validatePassword(addMemberRequest.getPassword())&&memberUtils.validateMember(addMemberRequest)){
+           PasswordEncoder passwordEncoder1=new BCryptPasswordEncoder();
+           memberDB.setPassword(passwordEncoder1.encode(addMemberRequest.getPassword()));
            memberDB= memberRepo.save(memberDB);
            if (!memberDB.getIsVerified()&& memberDB.getEmail() != null){
                mailBody=new MailBody();
@@ -55,7 +64,7 @@ public class MemberImpl implements Member {
                mail.sendMail(mailBody);
                mail.saveOTP(mailBody,addMemberRequest.getEmail());
            }
-
+        //todo if a member login a jwt generated ,another member logins another jwt generated, if we use jwt of the previous member it is 403 need to check
            return new BaseResponse<>(HttpStatus.OK.value(),"success",true,null,mapper.convertValue(memberDB, new TypeReference<>() {
            }));
         }
@@ -66,14 +75,13 @@ public class MemberImpl implements Member {
         }
 
     }
-
     @Override
-    public BaseResponse<String> verifyOTP(String email, String OTP) throws CommonException {
-        if (email!=null&&OTP!=null){
-            Optional<MailDB> mailDB=mailRepo.findByEmail(email);
-            if (mailDB.isPresent()&&System.currentTimeMillis()<=mailDB.get().getExpirationTime()&& OTP.equals(mailDB.get().getCode())){
+    public BaseResponse<String> verifyOTP(OtpRequest otpRequest) throws CommonException {
+        if (otpRequest.getEmail()!=null&&otpRequest.getOtp()!=null){
+            Optional<MailDB> mailDB=mailRepo.findByEmail(otpRequest.getEmail());
+            if (mailDB.isPresent()&&System.currentTimeMillis()<=mailDB.get().getExpirationTime()&& otpRequest.getOtp().equals(mailDB.get().getCode())){
                 memberDB=new MemberDB();
-                Optional<MemberDB> memberDB1=memberRepo.findByEmail(email);
+                Optional<MemberDB> memberDB1=memberRepo.findByEmail(otpRequest.getEmail());
                 memberDB=memberDB1.get();
                 memberDB.setIsVerified(true);
                 memberRepo.save(memberDB);
