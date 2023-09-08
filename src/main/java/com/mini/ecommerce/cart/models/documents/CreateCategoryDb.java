@@ -5,6 +5,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
 import java.util.List;
 
 @Document(collection="category")
@@ -16,4 +17,6 @@ public class CreateCategoryDb {
     public String categoryName;
     public String categoryImageUrl;
     public List<CreateProductDto> products;
+    private String createdBy;
+    private Date createdAt;
 }

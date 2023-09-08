@@ -6,6 +6,5 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.Optional;
 
 public interface MailRepo extends CrudRepository<MailDB,String> {
-
     Optional<MailDB> findByEmail(String s);
 }

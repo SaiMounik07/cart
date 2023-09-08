@@ -19,11 +19,11 @@ class ProductRequestValidator extends ProductImpl {
         this.categoryRepo=categoryRepo;
     }
 
-    public Boolean createProductRequest(CreateProductRq createProductRq) throws CommonException {
+    public Boolean createProductRequest(CreateProductRq createProductRq,String username) throws CommonException {
         if (createProductRq.getProductId()==null||createProductRq.getProductId().isEmpty()||createProductRq.getProductName()==null||createProductRq.getCategories()==null||createProductRq.getCategories().size()==0||createProductRq.getProductListPrice()==null){
             throw new CommonException("Some fields are null please check");
         }
-       Optional<CreateProductDb> createProductDb=productRepo.findByProductId(createProductRq.getProductId());
+       Optional<CreateProductDb> createProductDb=productRepo.findByProductIdAndCreatedBy(createProductRq.getProductId(),username);
         if (createProductDb.isPresent()){
             throw new CommonException("Product already exists");
         }
