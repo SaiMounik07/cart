@@ -35,6 +35,8 @@ public class AuthImpl implements Auth, LogoutHandler {
     private AuthenticationManager authenticationManager;
     @Autowired
     Token token;
+
+    AuthToken authToken;
     @Autowired
     private JwtTokenRepo jwtTokenRepo;
     @Override
@@ -50,6 +52,7 @@ public class AuthImpl implements Auth, LogoutHandler {
 
         if (user.getIsVerified()) {
             var jwtToken = jwtService.generateJwtToken(user);
+            token = new Token();
             token.setUser(user);
             token.setToken(jwtToken);
             token.setRevoked(false);
@@ -57,6 +60,7 @@ public class AuthImpl implements Auth, LogoutHandler {
             jwtTokenRepo.save(token);
             return new BaseResponse<>(HttpStatus.OK.value(), "success", true, null, AuthToken.builder()
                     .token(jwtToken)
+                    .role(user.getRole())
                     .build());
         }
         else {

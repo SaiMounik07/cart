@@ -11,4 +11,5 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 public class AuthToken {
     private String token;
+    private Role role;
 }

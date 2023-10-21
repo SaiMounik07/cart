@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductImpl implements Product {
@@ -43,14 +44,15 @@ public class ProductImpl implements Product {
     JwtService jwtService;
    @Autowired
     MemberRepo memberRepo;
+    static Random random;
 
     @Override
     public CreateProductDto createProduct(CreateProductRq createProductRq,String token) throws CommonException {
-        if (validateToken(token)) {
+        if (Boolean.TRUE.equals(validateToken(token))) {
             CreateProductDto createProductDto = null;
             ProductRequestValidator productRequestValidator = new ProductRequestValidator(productRepo, categoryRepo);
             ProductUtils productUtils = new ProductUtils(productRepo, categoryRepo, mapper);
-            if (productRequestValidator.createProductRequest(createProductRq,jwtService.extractEmail(token.substring(7)))) {
+            if (Boolean.TRUE.equals(productRequestValidator.createProductRequest(createProductRq,jwtService.extractEmail(token.substring(7))))) {
                 CreateProductDb createProductDb = new CreateProductDb();
                 Integer replishedStocks = 0;//need to implement
                 Integer reservedStocks = 0;//need to implement
@@ -64,7 +66,6 @@ public class ProductImpl implements Product {
                 createProductDb.setCreatedBy(jwtService.extractEmail(token.substring(7)));
                 createProductDb.setCreatedAt(Calendar.getInstance().getTime());
                 CreateProductDb createProductDb1 = productRepo.save(createProductDb);
-
                 Optional<CreateCategoryDb> createCategoryDb;
                 for (String category : createProductRq.getCategories()) {
 
@@ -114,7 +115,7 @@ public class ProductImpl implements Product {
     public List<CreateProductDto> getSpecficProduct(String productDetail,String token) throws CommonOkException {
 
        Optional<List<CreateProductDb>> createProductDb=productRepo.findByProductNameAndCreatedBy(productDetail,jwtService.extractEmail(token.substring(7)));
-       if (createProductDb.isEmpty()||createProductDb.get().size()==0){
+       if (createProductDb.isEmpty()||createProductDb.get().isEmpty()){
            throw new CommonOkException("the product details are empty");
        }
        return mapper.convertValue(createProductDb.get(), new TypeReference<List<CreateProductDto>>() {
@@ -141,7 +142,7 @@ public class ProductImpl implements Product {
 
     @Override
     public CreateProductDto updateProduct(CreateProductRq createProductRq,String token) throws CommonException {
-        if (validateToken(token)) {
+        if (Boolean.TRUE.equals(validateToken(token))) {
             CreateProductDto createProductDto = null;
             Optional<CreateProductDb> createProductDb2 = productRepo.findByProductIdAndCreatedBy(createProductRq.getProductId(),jwtService.extractEmail(token.substring(7)));
             if (createProductDb2.isEmpty()) {
@@ -162,7 +163,7 @@ public class ProductImpl implements Product {
                     createProductDb.setSuccess(true);
                     CreateProductDb createProductDb1 = productRepo.save(createProductDb);
                     Optional<CreateCategoryDb> createCategoryDb;
-                    List<CreateProductDto> list = new ArrayList<>();
+                    List<CreateProductDto> list ;
                     for (String category : createProductRq.getCategories()) {
                         createCategoryDb = categoryRepo.findByCategoryNameAndCreatedBy(category, jwtService.extractEmail(token.substring(7)));
                         if (createCategoryDb.isPresent()) {
@@ -199,7 +200,7 @@ public class ProductImpl implements Product {
         if (createCategory.categoryName==null){
             throw new CategoryAlreadyExists("CategoryName must Not be Null");
         }
-        if (validateToken(token)) {
+        if (Boolean.TRUE.equals(validateToken(token))) {
             ProductUtils productUtils = new ProductUtils(productRepo, categoryRepo, mapper);
             CreateCategoryDb createCategoryDb = new CreateCategoryDb();
             createCategoryDb.setCategoryName(createCategory.categoryName);
@@ -237,14 +238,25 @@ public class ProductImpl implements Product {
 
     public BaseResponse<?> getAllCategories(String token){
         Optional<List<CreateCategoryDb>> categoryDb=categoryRepo.findByCreatedBy(jwtService.extractEmail(token.substring(7)));
-        if (categoryDb.isEmpty()){
+        if (categoryDb.isEmpty()||categoryDb.get().size()==0){
             return new BaseResponse<>(HttpStatus.OK.value(),"success",true,null,"EMPTY_VALUE");
         }
-        return new BaseResponse<>(HttpStatus.OK.value(),"success",true,null,mapper.convertValue(categoryDb.get(), new TypeReference<CategoryforProductDto>() {
-        }));
+        List<CategoryforProductDto> categoryDtos = categoryDb.get().stream()
+                .map(this::convertToCategoryforProductDto)
+                .collect(Collectors.toList());
+
+        return new BaseResponse<>(HttpStatus.OK.value(), "success", true, null, categoryDtos);
 
     }
+    private CategoryforProductDto convertToCategoryforProductDto(CreateCategoryDb categoryDb) {
+        CategoryforProductDto categoryDto = new CategoryforProductDto();
+        categoryDto.setId(categoryDb.getId());
+        categoryDto.setCategoryCode(categoryDb.getCategoryCode());
+        categoryDto.setCategoryName(categoryDb.getCategoryName());
+        categoryDto.setCategoryImageUrl(categoryDb.getCategoryImageUrl());
 
+        return categoryDto;
+    }
     @Override
     public CreateCategorydto getSpecficCategory(String categoryName,String token) throws NoSuchCategoryFound {
         if (categoryName!=null) {
@@ -290,8 +302,7 @@ public class ProductImpl implements Product {
 
     @Override
     public CreateCategorydto updateCategory(@NotNull CreateCategoryRq updateCategory,String token) throws CommonException, IOException {
-        ProductUtils productUtils = new ProductUtils(productRepo,categoryRepo,mapper);
-        if (validateToken(token)) {
+        if (Boolean.TRUE.equals(validateToken(token))) {
         if (updateCategory.categoryName==null||updateCategory.updatedCategoryName==null||updateCategory.updatedCategoryName.length()<3)
             throw new CommonException("CategoryName or Image is null");
         else {
@@ -315,20 +326,11 @@ public class ProductImpl implements Product {
             throw new CommonException("un authorized");
         }
     }
-
-
-
-
-
-
-
-
     public static String generateCategoryCode(String productName){
-        Random random = new Random();
+         random  = new Random();
         if (productName!=null)
             return productName.substring(0,3).toUpperCase(Locale.ROOT)+"-"+"60"+random.nextInt(1000);
         else
             return null;
     }
-
 }

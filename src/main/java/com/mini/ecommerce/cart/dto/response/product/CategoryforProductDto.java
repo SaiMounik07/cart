@@ -1,6 +1,5 @@
 package com.mini.ecommerce.cart.dto.response.product;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 

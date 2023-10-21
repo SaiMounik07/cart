@@ -41,6 +41,7 @@ public class MailImpl implements Mail {
             props.put("mail.smtp.port", "587");
             props.put("mail.debug", "true");
             Session session = Session.getInstance(props, new Authenticator() {
+                @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
                     return new PasswordAuthentication(username, password);
                 }
@@ -59,7 +60,6 @@ public class MailImpl implements Mail {
             log.info("failed");
             return false;
         }
-
     }
 
     @Override

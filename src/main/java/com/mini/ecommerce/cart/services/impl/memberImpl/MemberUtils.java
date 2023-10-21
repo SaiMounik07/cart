@@ -3,13 +3,8 @@ package com.mini.ecommerce.cart.services.impl.memberImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mini.ecommerce.cart.dto.request.AddMemberRequest;
 import com.mini.ecommerce.cart.dto.response.mail.MailBody;
-import com.mini.ecommerce.cart.dto.response.member.AddMemberDto;
-import com.mini.ecommerce.cart.exceptionhandler.CommonException;
-import com.mini.ecommerce.cart.models.BaseResponse;
 import com.mini.ecommerce.cart.models.entities.MemberDB;
 import com.mini.ecommerce.cart.repositories.member.MemberRepo;
-import com.mini.ecommerce.cart.services.Mail;
-import com.mini.ecommerce.cart.services.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,14 +16,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MemberUtils extends MemberImpl {
-    private static final Logger log = LoggerFactory.getLogger(MemberUtils.class);
 
- @Autowired
- MemberRepo memberRepo;
+    private static final Logger log = LoggerFactory.getLogger(MemberUtils.class);
  @Autowired
  ObjectMapper objectMapper;
+    static Random random;
 
- MailBody mailBody;
  LinkedHashMap<String,String> code=new LinkedHashMap<>();
 
     public MemberUtils(MemberRepo member, ObjectMapper objectMapper) {
@@ -45,7 +38,6 @@ public class MemberUtils extends MemberImpl {
         Pattern pattern=Pattern.compile("^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$");
         Matcher matcher=pattern.matcher(mailId);
         log.info("is email matched :{}",matcher.matches());
-
         return  matcher.matches();
     }
 
@@ -66,7 +58,7 @@ public class MemberUtils extends MemberImpl {
 
     }
     public static String generateCode() {
-        Random random = new Random();
+         random = new Random();
         int max = 999999;
         int min = 111111;
         return String.valueOf(random.nextInt(max - min) + min);

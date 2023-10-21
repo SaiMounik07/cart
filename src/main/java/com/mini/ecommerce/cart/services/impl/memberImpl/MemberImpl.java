@@ -20,7 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Calendar;
 import java.util.Optional;
@@ -32,8 +31,6 @@ public class MemberImpl implements Member {
 
     @Autowired
     MemberRepo memberRepo;
-    private PasswordEncoder passwordEncoder;
-    BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
     ObjectMapper mapper;
     @Autowired
@@ -44,21 +41,20 @@ public class MemberImpl implements Member {
     MailBody mailBody;
     MemberRequestValidator memberRequestValidator;
     MemberDB memberDB;
-    RestTemplate restTemplate;
     @Override
     public BaseResponse<AddMemberDto> addMember(AddMemberRequest addMemberRequest) throws CommonException {
-        MemberDB memberDB=new MemberDB();
+        memberDB=new MemberDB();
         memberUtils=new MemberUtils(memberRepo,mapper);
         memberRequestValidator=new MemberRequestValidator();
         BeanUtils.copyProperties(addMemberRequest,memberDB);
         memberDB.setIsActive(true);
         memberDB.setIsVerified(false);
         memberDB.setCreatedDate(Calendar.getInstance().getTime());
-        if (memberRequestValidator.addMemberRequest(addMemberRequest)&&memberUtils.validateEmailId(addMemberRequest.getEmail())&&memberUtils.validatePassword(addMemberRequest.getPassword())&&memberUtils.validateMember(addMemberRequest)){
+        if (Boolean.TRUE.equals(memberRequestValidator.addMemberRequest(addMemberRequest)&&memberUtils.validateEmailId(addMemberRequest.getEmail())&&memberUtils.validatePassword(addMemberRequest.getPassword()))&&memberUtils.validateMember(addMemberRequest)){
            PasswordEncoder passwordEncoder1=new BCryptPasswordEncoder();
            memberDB.setPassword(passwordEncoder1.encode(addMemberRequest.getPassword()));
            memberDB= memberRepo.save(memberDB);
-           if (!memberDB.getIsVerified()&& memberDB.getEmail() != null){
+           if (Boolean.TRUE.equals(!memberDB.getIsVerified()) && memberDB.getEmail() != null){
                mailBody=new MailBody();
                mailBody=memberUtils.generateMailBody(addMemberRequest.getEmail());
                mail.sendMail(mailBody);
@@ -85,6 +81,7 @@ public class MemberImpl implements Member {
                 memberDB=memberDB1.get();
                 memberDB.setIsVerified(true);
                 memberRepo.save(memberDB);
+                mailRepo.delete(mailDB.get());
                 return new BaseResponse<>(HttpStatus.OK.value(),"success",true,null,null);
             }else {
                 if (mailDB.isEmpty())
