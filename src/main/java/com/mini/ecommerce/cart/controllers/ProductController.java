@@ -20,7 +20,7 @@ import java.util.List;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
-@CrossOrigin("http://localhost:3000/")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping(value = "/product")
 public class ProductController {
     @Autowired
@@ -120,7 +120,7 @@ public class ProductController {
      * @throws CommonOkException
      */
     @GetMapping("/product")
-    public List<CreateProductDto> getProduct(@RequestHeader("categoryName") String productDetail,@RequestHeader(AUTHORIZATION) String token) throws CommonOkException {
+    public List<CreateProductDto> getProduct(@RequestHeader("productName") String productDetail,@RequestHeader(AUTHORIZATION) String token) throws CommonOkException {
         return product.getSpecficProduct(productDetail,token);
     }
 
