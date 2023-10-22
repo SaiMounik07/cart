@@ -23,6 +23,4 @@ public class AddMemberRequest {
     private String confirmPassword;
     private String mobileNumber;
     private Role role;
-    private String dob;
-
 }
