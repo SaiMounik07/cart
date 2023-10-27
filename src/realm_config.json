@@ -4,5 +4,6 @@
     "name": "Application-0",
     "location": "IN-MB",
     "provider_region": "aws-ap-south-1",
-    "deployment_model": "LOCAL"
+    "deployment_model": "LOCAL",
+    "environment": "testing"
 }
